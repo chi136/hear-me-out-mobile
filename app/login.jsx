@@ -19,7 +19,7 @@ import { validateUser } from "../constants/user";
 
 export default function LoginScreen() {
   const [agree, setAgree] = useState(false);
-  const [studentNum, setStudentNum] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [invalid, setInvalid] = useState(false);
@@ -28,28 +28,28 @@ export default function LoginScreen() {
   );
 
   function handleLogin() {
-  if (!studentNum || !password) {
-    setErrorMsg("Please fill in all fields.");
-    setInvalid(true);
-    return;
-  }
+    if (!email || !password) {
+      setErrorMsg("Please fill in all fields.");
+      setInvalid(true);
+      return;
+    }
 
-  const user = validateUser(studentNum, password);
+    const user = validateUser(email, password);
 
-  if (!user) {
-    setErrorMsg("Invalid student number or password.");
-    setInvalid(true);
-    return;
-  }
+    if (!user) {
+      setErrorMsg("Invalid email or password.");
+      setInvalid(true);
+      return;
+    }
 
-  if (!agree) {
+    if (!agree) {
       setErrorMsg("Please agree to the terms and conditions first.");
       setInvalid(true);
       return;
     }
 
-  router.replace("/assessment");
-}
+    router.replace("/assessment");
+  }
 
   return (
     <ScrollView
@@ -65,18 +65,19 @@ export default function LoginScreen() {
 
         <Text style={GlobalStyles.screenTitle}>LOGIN</Text>
 
-        <Text style={GlobalStyles.label}>Student Number</Text>
+        <Text style={GlobalStyles.label}>Email</Text>
         <TextInput
           style={GlobalStyles.input}
-          placeholder="Enter student number"
+          placeholder="Enter email"
           placeholderTextColor={COLORS.muted}
-          value={studentNum}
-          onChangeText={setStudentNum}
-          keyboardType="numeric"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
         />
 
-        <Text style={styles.hint}>Example: 02000123456</Text>
-        
+        <Text style={styles.hint}>Example: user@email.com</Text>
+
         <Text style={GlobalStyles.label}>Password</Text>
         <View style={styles.pwRow}>
           <TextInput
@@ -99,13 +100,6 @@ export default function LoginScreen() {
             />
           </Pressable>
         </View>
-
-        <Text
-          style={[GlobalStyles.link, { marginTop: 6, textAlign: "right" }]}
-          onPress={() => router.push("/forgot-password")}
-        >
-          Forgot Password?
-        </Text>
 
         <Pressable style={styles.checkRow} onPress={() => setAgree(!agree)}>
           <View style={[styles.checkbox, agree && styles.checkboxChecked]}>
@@ -133,14 +127,14 @@ export default function LoginScreen() {
             style={GlobalStyles.link}
             onPress={() => router.push("/register")}
           >
-            Register here
+            Sign up
           </Text>
         </Text>
 
         <InvalidModal
-        visible={invalid}
-        message={errorMsg}
-        onClose={() => setInvalid(false)}
+          visible={invalid}
+          message={errorMsg}
+          onClose={() => setInvalid(false)}
         />
       </View>
     </ScrollView>
@@ -210,4 +204,4 @@ const styles = StyleSheet.create({
     color: COLORS.muted,
     flex: 1,
   },
-}); 
+});

@@ -17,7 +17,8 @@ import InvalidModal from "../components/invalid-modal";
 import GlobalStyles from "../constants/GlobalStyles";
 
 export default function RegisterScreen() {
-  const [studentNum, setStudentNum] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -29,7 +30,7 @@ export default function RegisterScreen() {
   );
 
   function handleSubmit() {
-    if (!studentNum || !password || !confirm) {
+    if (!name || !email || !password || !confirm) {
       setErrorMsg("Please fill in all fields.");
       setInvalid(true);
       return;
@@ -42,7 +43,7 @@ export default function RegisterScreen() {
     }
 
     if (password !== confirm) {
-      setErrorMsg("Wrong password. Try again.");
+      setErrorMsg("Passwords do not match.");
       setInvalid(true);
       return;
     }
@@ -63,17 +64,27 @@ export default function RegisterScreen() {
         <Logo size={76} />
         <Text style={GlobalStyles.screenTitle}>REGISTER</Text>
 
-        <Text style={GlobalStyles.label}>Student Number</Text>
+        <Text style={GlobalStyles.label}>Name</Text>
         <TextInput
           style={GlobalStyles.input}
-          placeholder="Enter student number"
+          placeholder="Enter your name"
           placeholderTextColor={COLORS.muted}
-          value={studentNum}
-          onChangeText={setStudentNum}
-          keyboardType="numeric"
+          value={name}
+          onChangeText={setName}
         />
 
-        <Text style={styles.hint}>Example: 02000123456</Text>
+        <Text style={GlobalStyles.label}>Email</Text>
+        <TextInput
+          style={GlobalStyles.input}
+          placeholder="Enter email"
+          placeholderTextColor={COLORS.muted}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+
+        <Text style={styles.hint}>Example: user@email.com</Text>
 
         <Text style={GlobalStyles.label}>Password</Text>
         <View style={styles.pwRow}>
@@ -95,11 +106,11 @@ export default function RegisterScreen() {
           </Pressable>
         </View>
 
-        <Text style={GlobalStyles.label}>Confirmed Password</Text>
+        <Text style={GlobalStyles.label}>Confirm Password</Text>
         <View style={styles.pwRow}>
           <TextInput
             style={[GlobalStyles.input, styles.pwInput]}
-            placeholder="Enter password"
+            placeholder="Confirm password"
             placeholderTextColor={COLORS.muted}
             secureTextEntry={!showCf}
             value={confirm}
@@ -143,13 +154,12 @@ export default function RegisterScreen() {
         </Text>
 
         <InvalidModal
-        visible={invalid}
-        message={errorMsg}
-        onClose={() => setInvalid(false)}
+          visible={invalid}
+          message={errorMsg}
+          onClose={() => setInvalid(false)}
         />
       </View>
     </ScrollView>
-    
   );
 }
 

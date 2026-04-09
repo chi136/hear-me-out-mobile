@@ -1,24 +1,21 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  View,
+  Text,
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
+  Animated,
+  Easing,
 } from "react-native";
-
-import { router } from "expo-router";
 import COLORS from "../constants/colors";
-import GlobalStyles from "../constants/GlobalStyles";
-import InvalidModal from "../components/invalid-modal";
+import { router } from "expo-router";
+import Logo from "../components/logo";
 
 const questions = [
   {
     id: "q1",
-    question:
-      "Over the past 2 weeks, how often have you felt down, depressed, or hopeless?",
-    category: "Depression",
+    question: "I feel nervous or anxious",
     options: [
       { value: "0", label: "Not at all", score: 0 },
       { value: "1", label: "Several days", score: 1 },
@@ -28,9 +25,7 @@ const questions = [
   },
   {
     id: "q2",
-    question:
-      "How often have you had little interest or pleasure in doing things?",
-    category: "Depression",
+    question: "I have trouble sleeping",
     options: [
       { value: "0", label: "Not at all", score: 0 },
       { value: "1", label: "Several days", score: 1 },
@@ -38,11 +33,8 @@ const questions = [
       { value: "3", label: "Nearly every day", score: 3 },
     ],
   },
-  {
-    id: "q3",
-    question:
-      "How often have you had trouble falling or staying asleep, or sleeping too much?",
-    category: "Sleep",
+  { id: "q3",
+    question: "I feel overwhelmed",
     options: [
       { value: "0", label: "Not at all", score: 0 },
       { value: "1", label: "Several days", score: 1 },
@@ -50,10 +42,8 @@ const questions = [
       { value: "3", label: "Nearly every day", score: 3 },
     ],
   },
-  {
-    id: "q4",
-    question: "How often have you felt tired or had little energy?",
-    category: "Energy",
+  { id: "q4",
+    question: "I feel sad or hopeless",
     options: [
       { value: "0", label: "Not at all", score: 0 },
       { value: "1", label: "Several days", score: 1 },
@@ -61,314 +51,274 @@ const questions = [
       { value: "3", label: "Nearly every day", score: 3 },
     ],
   },
-  {
-    id: "q5",
-    question: "How often have you felt nervous, anxious, or on edge?",
-    category: "Anxiety",
+  { id: "q5",
+    question: "I have difficulty concentrating",
     options: [
       { value: "0", label: "Not at all", score: 0 },
       { value: "1", label: "Several days", score: 1 },
       { value: "2", label: "More than half the days", score: 2 },
       { value: "3", label: "Nearly every day", score: 3 },
-    ],
-  },
-  {
-    id: "q6",
-    question: "How often have you been unable to stop or control worrying?",
-    category: "Anxiety",
-    options: [
-      { value: "0", label: "Not at all", score: 0 },
-      { value: "1", label: "Several days", score: 1 },
-      { value: "2", label: "More than half the days", score: 2 },
-      { value: "3", label: "Nearly every day", score: 3 },
-    ],
-  },
-  {
-    id: "q7",
-    question: "How would you rate your overall stress level?",
-    category: "Stress",
-    options: [
-      { value: "0", label: "Very low", score: 0 },
-      { value: "1", label: "Low", score: 1 },
-      { value: "2", label: "Moderate", score: 2 },
-      { value: "3", label: "High", score: 3 },
-      { value: "4", label: "Very high", score: 4 },
-    ],
-  },
-  {
-    id: "q8",
-    question:
-      "How often do you feel overwhelmed by daily responsibilities?",
-    category: "Stress",
-    options: [
-      { value: "0", label: "Never", score: 0 },
-      { value: "1", label: "Rarely", score: 1 },
-      { value: "2", label: "Sometimes", score: 2 },
-      { value: "3", label: "Often", score: 3 },
-      { value: "4", label: "Always", score: 4 },
-    ],
-  },
-  {
-    id: "q9",
-    question: "How would you rate your ability to concentrate on tasks?",
-    category: "Cognitive",
-    options: [
-      { value: "4", label: "Excellent", score: 0 },
-      { value: "3", label: "Good", score: 1 },
-      { value: "2", label: "Fair", score: 2 },
-      { value: "1", label: "Poor", score: 3 },
-      { value: "0", label: "Very poor", score: 4 },
-    ],
-  },
-  {
-    id: "q10",
-    question: "How often do you engage in activities you enjoy?",
-    category: "Wellbeing",
-    options: [
-      { value: "4", label: "Daily", score: 0 },
-      { value: "3", label: "Several times a week", score: 1 },
-      { value: "2", label: "Once a week", score: 2 },
-      { value: "1", label: "Rarely", score: 3 },
-      { value: "0", label: "Never", score: 4 },
-    ],
-  },
-  {
-    id: "q11",
-    question: "How satisfied are you with your social relationships?",
-    category: "Social",
-    options: [
-      { value: "4", label: "Very satisfied", score: 0 },
-      { value: "3", label: "Satisfied", score: 1 },
-      { value: "2", label: "Neutral", score: 2 },
-      { value: "1", label: "Dissatisfied", score: 3 },
-      { value: "0", label: "Very dissatisfied", score: 4 },
-    ],
-  },
-  {
-    id: "q12",
-    question: "How often do you feel isolated or alone?",
-    category: "Social",
-    options: [
-      { value: "0", label: "Never", score: 0 },
-      { value: "1", label: "Rarely", score: 1 },
-      { value: "2", label: "Sometimes", score: 2 },
-      { value: "3", label: "Often", score: 3 },
-      { value: "4", label: "Always", score: 4 },
-    ],
-  },
-  {
-    id: "q13",
-    question:
-      "How often have you felt bad about yourself or that you are a failure?",
-    category: "Self-esteem",
-    options: [
-      { value: "0", label: "Not at all", score: 0 },
-      { value: "1", label: "Several days", score: 1 },
-      { value: "2", label: "More than half the days", score: 2 },
-      { value: "3", label: "Nearly every day", score: 3 },
-    ],
-  },
-  {
-    id: "q14",
-    question:
-      "How would you rate your appetite or eating habits recently?",
-    category: "Physical",
-    options: [
-      { value: "0", label: "Normal and healthy", score: 0 },
-      { value: "1", label: "Slightly changed", score: 1 },
-      { value: "2", label: "Moderately changed", score: 2 },
-      { value: "3", label: "Significantly changed", score: 3 },
-    ],
-  },
-  {
-    id: "q15",
-    question:
-      "How often do you have thoughts that you would be better off dead or hurting yourself?",
-    category: "Crisis",
-    options: [
-      { value: "0", label: "Never", score: 0 },
-      { value: "1", label: "Rarely", score: 1 },
-      { value: "2", label: "Sometimes", score: 2 },
-      { value: "3", label: "Often", score: 3 },
     ],
   },
 ];
 
 export default function AssessmentScreen() {
-  const { width } = useWindowDimensions();
-  const isWeb = width >= 768;
+  const scrollRef = useRef(null);
 
+  const [step, setStep] = useState("welcome");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [chat, setChat] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [showResults, setShowResults] = useState(false);
+  const [done, setDone] = useState(false);
+  const [typing, setTyping] = useState(false);
 
-  const [invalid, setInvalid] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const currentQ = questions[currentIndex];
 
-  const handleAnswer = (id, value) => {
-    setAnswers((prev) => ({ ...prev, [id]: value }));
+  const dot1 = useRef(new Animated.Value(0)).current;
+  const dot2 = useRef(new Animated.Value(0)).current;
+  const dot3 = useRef(new Animated.Value(0)).current;
+
+  const animateDots = () => {
+    Animated.loop(
+      Animated.stagger(150, [
+        Animated.sequence([
+          Animated.timing(dot1, { toValue: 1, duration: 300, useNativeDriver: true }),
+          Animated.timing(dot1, { toValue: 0, duration: 300, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.timing(dot2, { toValue: 1, duration: 300, useNativeDriver: true }),
+          Animated.timing(dot2, { toValue: 0, duration: 300, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.timing(dot3, { toValue: 1, duration: 300, useNativeDriver: true }),
+          Animated.timing(dot3, { toValue: 0, duration: 300, useNativeDriver: true }),
+        ]),
+      ])
+    ).start();
+  };
+
+  useEffect(() => {
+  if (step === "assessment" && !done) {
+    setTyping(true);
+    animateDots();
+
+    if (chat.length === 0) {
+      setTimeout(() => {
+        setChat([{ type: "question", text: "Hi! I'm your Assessment Bot 👋" }]);
+        setTyping(false);
+
+        setTimeout(() => {
+          setChat((prev) => [
+            ...prev,
+            { type: "question", text: currentQ.question },
+          ]);
+        }, 800);
+      }, 600);
+    } else if (currentQ) {
+      setTimeout(() => {
+        setChat((prev) => [
+          ...prev,
+          { type: "question", text: currentQ.question },
+        ]);
+        setTyping(false);
+      }, 600);
+    }
+  }
+}, [currentIndex, step]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }, [chat, typing]);
+
+  const handleAnswer = (option) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [currentQ.id]: Number(option.value),
+    }));
+
+    setChat((prev) => [
+      ...prev,
+      { type: "answer", text: option.label },
+    ]);
+
+    setTyping(true);
+
+    setTimeout(() => {
+      if (currentIndex + 1 < questions.length) {
+        setCurrentIndex((prev) => prev + 1);
+      } else {
+        setDone(true);
+        setTyping(false);
+      }
+    }, 600);
   };
 
   const calculateScore = () => {
     let total = 0;
-
     questions.forEach((q) => {
-      const option = q.options.find((o) => o.value === answers[q.id]);
+      const option = q.options.find(
+        (o) => Number(o.value) === answers[q.id]
+      );
       if (option) total += option.score;
     });
-
     return total;
   };
 
-  const score = calculateScore();
-
-  const getLevel = () => {
+  const getLevel = (score) => {
     if (score <= 2) return { label: "Low", color: COLORS.primary };
     if (score <= 4) return { label: "Moderate", color: "#F59E0B" };
     return { label: "High", color: "#EF4444" };
   };
 
-  const level = getLevel();
+  if (step === "welcome") {
+    return (
+      <View style={styles.screen}>
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <Logo size={28} />
+            <View>
+              <Text style={styles.headerTitle}>Assessment Bot</Text>
+              <Text style={styles.headerStatus}>Online</Text>
+            </View>
+          </View>
 
-  const handleSubmit = () => {
-    if (Object.keys(answers).length < questions.length) {
-      setErrorMsg("Please answer all questions.");
-      setInvalid(true);
-      return;
-    }
+          <View style={styles.center}>
+            <Text style={styles.title}>Welcome 👋</Text>
+            <Text style={styles.subtitle1}>
+              You are about to take a short mental health assessment.
+            </Text>
+            <Text style={styles.subtitle2}>
+              Please answer honestly. This will only take a few minutes.
+            </Text>
 
-    setShowResults(true);
+            <Pressable
+              style={styles.mainBtn}
+              onPress={() => setStep("assessment")}
+            >
+              <Text style={styles.btnText}>Start Assessment</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
-    setTimeout(() => {
-      router.replace("/mood");
-    }, 800);
-  };
+  if (done) {
+    const score = calculateScore();
+    const level = getLevel(score);
+    return (
+      <View style={styles.screen}>
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <Logo size={28} />
+            <View>
+              <Text style={styles.headerTitle}>Assessment Bot</Text>
+              <Text style={styles.headerStatus}>Online</Text>
+            </View>
+          </View>
 
-   const reset = () => {
-    setAnswers({});
-    setShowResults(false);
-  };
+          <View style={styles.center}>
+            <Text style={styles.title}>Assessment Completed ✅</Text>
+            <Text style={[styles.result, { color: level.color }]}>
+              {level.label} Risk
+            </Text>
+            <Text style={styles.score}>Score: {score}</Text>
+
+            <Pressable
+              style={styles.mainBtn}
+              onPress={() => router.push("/mood")}
+            >
+              <Text style={styles.btnText}>Continue</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={[styles.card, isWeb && styles.cardWeb]}>
-        <Text style={GlobalStyles.screenTitle}>
-          Mental Health Assessment
-        </Text>
+    <View style={styles.screen}>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Logo size={28} />
+          <View>
+            <Text style={styles.headerTitle}>Assessment Bot</Text>
+            <Text style={styles.headerStatus}>Online</Text>
+          </View>
+        </View>
 
-        {!showResults &&
-          questions.map((q) => (
-            <View key={q.id} style={styles.qBox}>
-              <Text style={styles.question}>{q.question}</Text>
-              <Text style={styles.category}>{q.category}</Text>
-
-              {q.options.map((opt) => (
-                <Pressable
-                  key={opt.value}
-                  style={[
-                    styles.option,
-                    answers[q.id] === opt.value && styles.selected,
-                  ]}
-                  onPress={() => handleAnswer(q.id, opt.value)}
-                >
-                  <Text>{opt.label}</Text>
-                </Pressable>
-              ))}
+        <ScrollView ref={scrollRef} style={styles.chatArea}>
+          {chat.map((msg, index) => (
+            <View
+              key={index}
+              style={[
+                styles.message,
+                msg.type === "answer" ? styles.userMsg : styles.botMsg,
+              ]}
+            >
+              <Text style={styles.msgText}>{msg.text}</Text>
             </View>
           ))}
 
-        {!showResults ? (
-          <Pressable style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>SUBMIT ASSESSMENT</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.resultBox}>
-            <Text style={[styles.resultText, { color: level.color }]}>
-              {level.label} Risk Level
-            </Text>
+          {typing && (
+            <View style={[styles.message, styles.botMsg, styles.typingBubble]}>
+              <Animated.View style={[styles.dot, { opacity: dot1 }]} />
+              <Animated.View style={[styles.dot, { opacity: dot2 }]} />
+              <Animated.View style={[styles.dot, { opacity: dot3 }]} />
+            </View>
+          )}
+        </ScrollView>
 
-            <Text style={styles.scoreText}>Score: {score}</Text>
-
-            <Pressable style={styles.button} onPress={reset}>
-              <Text style={styles.buttonText}>OKAY</Text>
-            </Pressable>
+        {!typing && currentQ && !done && (
+          <View style={styles.options}>
+            {currentQ.options.map((opt) => (
+              <Pressable
+                key={opt.value}
+                style={styles.optionBtn}
+                onPress={() => handleAnswer(opt)}
+              >
+                <Text style={styles.optionText}>{opt.label}</Text>
+              </Pressable>
+            ))}
           </View>
         )}
-
-        <InvalidModal
-          visible={invalid}
-          message={errorMsg}
-          onClose={() => setInvalid(false)}
-        />
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    paddingVertical: 40,
-    alignItems: "center",
-  },
+  screen: { flex: 1, backgroundColor: "#F2F2F7", padding: 12 },
   card: {
-    width: "100%",
-    padding: 20,
-  },
-  cardWeb: {
-    width: "100%",
-    maxWidth: 600,
+    flex: 1,
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 28,
+    borderRadius: 16,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+    elevation: 3,
   },
-  qBox: {
-    marginBottom: 18,
-  },
-  question: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  category: {
-    fontSize: 11,
-    color: COLORS.muted,
-    marginBottom: 8,
-  },
-  option: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-    borderRadius: 8,
-    marginBottom: 6,
-    backgroundColor: COLORS.inputBg,
-  },
-  selected: {
-    backgroundColor: COLORS.primary,
-    opacity: 0.15,
-    borderColor: COLORS.primary,
-  },
-  resultBox: {
-    marginTop: 20,
-    alignItems: "center",
-    gap: 10,
-  },
-  resultText: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  scoreText: {
-    fontSize: 14,
-    color: COLORS.muted,
-  },
-  button: {
-    marginTop: 10,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "700",
-  },
+  header: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
+  headerTitle: { fontSize: 16, fontWeight: "700" },
+  headerStatus: { fontSize: 12, color: "#22C55E" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 12 },
+  title: { fontSize: 22, fontWeight: "700", marginBottom: 10 },
+  subtitle1: { fontSize: 18, textAlign: "center", marginBottom: 8, color: "#555" },
+  subtitle2: { fontSize: 14, textAlign: "center", marginBottom: 8, color: "#555" },
+  chatArea: { flex: 1, marginVertical: 12 },
+  message: { padding: 12, borderRadius: 16, marginVertical: 6, maxWidth: "75%", flexDirection: "row", alignItems: "center" },
+  botMsg: { backgroundColor: "#E5E5EA", alignSelf: "flex-start" },
+  userMsg: { backgroundColor: COLORS.primary, alignSelf: "flex-end" },
+  msgText: { fontSize: 14, color: "#000" },
+  options: { paddingVertical: 12 },
+  optionBtn: { padding: 14, borderRadius: 12, backgroundColor: "#E5E5EA", marginBottom: 8, borderWidth: 1, borderColor: "#ccc" },
+  optionText: { fontSize: 14, color: "#000" },
+  mainBtn: { backgroundColor: COLORS.primary, padding: 14, borderRadius: 12, marginTop: 16, alignItems: "center" },
+  btnText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  result: { fontSize: 20, fontWeight: "700", marginVertical: 10 },
+  score: { fontSize: 14, marginBottom: 10 },
+  typingBubble: { width: 50, justifyContent: "space-between", flexDirection: "row", padding: 10 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#555" },
 });

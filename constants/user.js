@@ -1,15 +1,15 @@
 export const USERS = [
   {
-    studentNumber: "02000340320",
+    email: "student123@gmail.com",
     password: "password123",
     name: "Mitzie Guligado",
   },
 ];
 
-export function validateUser(studentNumber, password) {
+export function validateUser(email, password) {
   const found = USERS.find(
     (u) =>
-      u.studentNumber === studentNumber &&
+      u.email === email &&
       u.password === password
   );
 
