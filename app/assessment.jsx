@@ -79,23 +79,27 @@ export default function AssessmentScreen() {
   const dot3 = useRef(new Animated.Value(0)).current;
 
   const animateDots = () => {
-    Animated.loop(
-      Animated.stagger(150, [
-        Animated.sequence([
-          Animated.timing(dot1, { toValue: 1, duration: 300, useNativeDriver: true }),
-          Animated.timing(dot1, { toValue: 0, duration: 300, useNativeDriver: true }),
-        ]),
-        Animated.sequence([
-          Animated.timing(dot2, { toValue: 1, duration: 300, useNativeDriver: true }),
-          Animated.timing(dot2, { toValue: 0, duration: 300, useNativeDriver: true }),
-        ]),
-        Animated.sequence([
-          Animated.timing(dot3, { toValue: 1, duration: 300, useNativeDriver: true }),
-          Animated.timing(dot3, { toValue: 0, duration: 300, useNativeDriver: true }),
-        ]),
-      ])
-    ).start();
-  };
+  const loop = Animated.loop(
+    Animated.stagger(150, [
+      Animated.sequence([
+        Animated.timing(dot1, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(dot1, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]),
+      Animated.sequence([
+        Animated.timing(dot2, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(dot2, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]),
+      Animated.sequence([
+        Animated.timing(dot3, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(dot3, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]),
+    ])
+  );
+
+  loop.start();
+
+  return loop;
+};
 
   useEffect(() => {
   if (step === "assessment" && !done) {
@@ -288,37 +292,158 @@ export default function AssessmentScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#F2F2F7", padding: 12 },
+  screen: {
+    flex: 1,
+    backgroundColor: COLORS.card, // same vibe as loading screen
+    padding: 16,
+    justifyContent: "center",
+  },
+
   card: {
     flex: 1,
     backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: 24,
+    padding: 18,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 12,
+    elevation: 4,
   },
-  header: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
-  headerTitle: { fontSize: 16, fontWeight: "700" },
-  headerStatus: { fontSize: 12, color: "#22C55E" },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 12 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 10 },
-  subtitle1: { fontSize: 18, textAlign: "center", marginBottom: 8, color: "#555" },
-  subtitle2: { fontSize: 14, textAlign: "center", marginBottom: 8, color: "#555" },
-  chatArea: { flex: 1, marginVertical: 12 },
-  message: { padding: 12, borderRadius: 16, marginVertical: 6, maxWidth: "75%", flexDirection: "row", alignItems: "center" },
-  botMsg: { backgroundColor: "#E5E5EA", alignSelf: "flex-start" },
-  userMsg: { backgroundColor: COLORS.primary, alignSelf: "flex-end" },
-  msgText: { fontSize: 14, color: "#000" },
-  options: { paddingVertical: 12 },
-  optionBtn: { padding: 14, borderRadius: 12, backgroundColor: "#E5E5EA", marginBottom: 8, borderWidth: 1, borderColor: "#ccc" },
-  optionText: { fontSize: 14, color: "#000" },
-  mainBtn: { backgroundColor: COLORS.primary, padding: 14, borderRadius: 12, marginTop: 16, alignItems: "center" },
-  btnText: { color: "#fff", fontWeight: "600", fontSize: 16 },
-  result: { fontSize: 20, fontWeight: "700", marginVertical: 10 },
-  score: { fontSize: 14, marginBottom: 10 },
-  typingBubble: { width: 50, justifyContent: "space-between", flexDirection: "row", padding: 10 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#555" },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 20,
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: COLORS.primary,
+  },
+
+  headerStatus: {
+    fontSize: 12,
+    color: COLORS.muted,
+  },
+
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+
+  title: {
+    fontSize: 26,
+    fontWeight: "900",
+    color: COLORS.primary,
+    textAlign: "center",
+    marginBottom: 10,
+  },
+
+  subtitle1: {
+    fontSize: 14,
+    color: COLORS.muted,
+    textAlign: "center",
+    marginBottom: 6,
+  },
+
+  subtitle2: {
+    fontSize: 13,
+    color: COLORS.muted,
+    textAlign: "center",
+    marginBottom: 18,
+  },
+
+  chatArea: {
+    flex: 1,
+    marginVertical: 10,
+  },
+
+  message: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 18,
+    marginVertical: 6,
+    maxWidth: "80%",
+  },
+
+  botMsg: {
+    backgroundColor: "#F1F1F1",
+    alignSelf: "flex-start",
+  },
+
+  userMsg: {
+    backgroundColor: COLORS.primary,
+    alignSelf: "flex-end",
+  },
+
+  msgText: {
+    fontSize: 14,
+    color: "#000",
+  },
+
+  options: {
+    paddingVertical: 10,
+    gap: 10,
+  },
+
+  optionBtn: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 999, // pill style
+    backgroundColor: "#F1F1F1",
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+  },
+
+  optionText: {
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  mainBtn: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 999,
+    marginTop: 20,
+  },
+
+  btnText: {
+    color: "#fff",
+    fontWeight: "800",
+    textAlign: "center",
+  },
+
+  result: {
+    fontSize: 22,
+    fontWeight: "900",
+    marginVertical: 10,
+    textAlign: "center",
+  },
+
+  score: {
+    fontSize: 14,
+    color: COLORS.muted,
+    marginBottom: 10,
+  },
+
+  typingBubble: {
+    width: 60,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+  },
+
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: "#999",
+  },
 });

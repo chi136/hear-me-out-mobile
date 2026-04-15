@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
+
+import COLORS from "../constants/colors";
 
 const moodColors = {
   "😊": "#4CAF50",
@@ -9,10 +11,15 @@ const moodColors = {
   "😡": "#F44336",
 };
 
+const CELL_SIZE = 44;
+const CELL_GAP = 6;
+const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const CALENDAR_WIDTH = CELL_SIZE * 7 + CELL_GAP * 6;
+
 export default function MoodHistory() {
-const params = useLocalSearchParams();
-const mood = typeof params.mood === "string" ? params.mood : null;
-const router = useRouter();
+  const params = useLocalSearchParams();
+  const mood = typeof params.mood === "string" ? params.mood : null;
+  const router = useRouter();
 
   const today = new Date();
 
@@ -26,6 +33,7 @@ const router = useRouter();
   const month = currentDate.getMonth();
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
 
   const monthName = currentDate.toLocaleString("default", {
     month: "long",
@@ -85,129 +93,199 @@ const router = useRouter();
   });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Mood Tracker</Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 40 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.content}>
+        <Text style={styles.title}>Mood Tracker</Text>
 
-      <View style={styles.buttonRow}>
-        <Pressable
-          style={styles.button}
-          onPress={() => router.push("/chat")}
-        >
-          <Text style={styles.buttonText}>Go to Chat</Text>
-        </Pressable>
+        <View style={styles.buttonRow}>
+          <Pressable style={styles.button} onPress={() => router.push("/chat")}>
+            <Text style={styles.buttonText}>Go to Chat</Text>
+          </Pressable>
 
-        <Pressable
-          style={[styles.button, { backgroundColor: "#ccc" }]}
-          onPress={() => router.push("/assessment")}
-        >
-          <Text style={styles.buttonText}>Track Again</Text>
-        </Pressable>
-      </View>
+          <Pressable
+            style={[styles.button, { backgroundColor: COLORS.muted }]}
+            onPress={() => router.push("/assessment")}
+          >
+            <Text style={styles.buttonText}>Track Again</Text>
+          </Pressable>
+        </View>
 
-      {redirecting && (
-        <Text style={styles.redirectText}>
-          Connecting you to support chat...
-        </Text>
-      )}
-
-      <View style={styles.header}>
-        <Pressable onPress={() => changeMonth(-1)}>
-          <Text>{"<"}</Text>
-        </Pressable>
-
-        <Text style={styles.month}>
-          {monthName} {year}
-        </Text>
-
-        <Pressable onPress={() => changeMonth(1)}>
-          <Text>{">"}</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.calendar}>
-        {Array.from({ length: daysInMonth }).map((_, i) => {
-          const day = i + 1;
-          const key = `${year}-${month}-${day}`;
-          const dayMood = moods[key];
-
-          return (
-            <Pressable
-              key={day}
-              style={[
-                styles.dayBox,
-                selectedDay === day && styles.selectedDay,
-                dayMood ? { backgroundColor: (moodColors[dayMood] || "#ccc") + "55" } : null
-              ]}
-              onPress={() => setSelectedDay(day)}
-            >
-              <Text style={styles.dayText}>{day}</Text>
-              <Text>{dayMood || ""}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      <View style={styles.analytics}>
-        <Text style={styles.analyticsTitle}>Mood Summary</Text>
-
-        {Object.keys(moodCounts).length === 0 && (
-          <Text style={{ textAlign: "center", color: "gray" }}>
-            No data yet
+        {redirecting && (
+          <Text style={styles.redirectText}>
+            Connecting you to support chat...
           </Text>
         )}
 
-        {Object.entries(moodCounts).map(([m, count]) => (
-          <Text key={m} style={styles.analyticsText}>
-            {m} : {count} days
+        {/* HEADER */}
+        <View style={styles.header}>
+          <Pressable onPress={() => changeMonth(-1)}>
+            <Text>{"<"}</Text>
+          </Pressable>
+
+          <Text style={styles.month}>
+            {monthName} {year}
           </Text>
-        ))}
-      </View>
 
-      {appointment && (
-        <View style={styles.appointmentBox}>
-          <Text style={styles.appointmentTitle}>Your Appointment</Text>
-
-          <Text>Severity: {appointment.severity}</Text>
-          <Text>Assigned To: {appointment.assignedTo}</Text>
-          <Text>Status: {appointment.status}</Text>
-          <Text>Date: {appointment.date}</Text>
-          <Text>Time: {appointment.time}</Text>
+          <Pressable onPress={() => changeMonth(1)}>
+            <Text>{">"}</Text>
+          </Pressable>
         </View>
-      )}
-    </View>
+
+        {/* WEEK DAYS */}
+       <View style={styles.weekRow}>
+        {WEEK_DAYS.map((day, index) => (
+          <Text
+          key={day}
+          style={[
+          styles.weekText,
+          index === 6 && { marginRight: 0 },
+        ]}
+          >
+            {day}
+            </Text>
+          ))}
+          </View>
+
+        <View style={styles.calendar}>
+          {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+            <View
+            key={`empty-${i}`}
+            style={[
+            styles.dayBoxEmpty,
+            (i + 1) % 7 === 0 && { marginRight: 0 },
+          ]}
+          />
+          ))}
+
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const day = i + 1;
+            const key = `${year}-${month}-${day}`;
+            const dayMood = moods[key];
+            const index = firstDayOfMonth + i;
+
+    return (
+      <Pressable
+        key={day}
+        style={[
+          styles.dayBox,
+          index % 7 === 6 && { marginRight: 0 },
+          selectedDay === day && styles.selectedDay,
+          dayMood && {
+            backgroundColor: (moodColors[dayMood] || "#ccc") + "55",
+          },
+        ]}
+        onPress={() => setSelectedDay(day)}
+      >
+        <Text style={styles.dayText}>{day}</Text>
+        <Text>{dayMood || ""}</Text>
+      </Pressable>
+    );
+  })}
+</View>
+
+        {/* SUMMARY */}
+        <View style={styles.analytics}>
+          <Text style={styles.analyticsTitle}>Mood Summary</Text>
+
+          {Object.keys(moodCounts).length === 0 && (
+            <Text style={{ textAlign: "center", color: "gray" }}>
+              No data yet
+            </Text>
+          )}
+
+          {Object.entries(moodCounts).map(([m, count]) => (
+            <Text key={m} style={styles.analyticsText}>
+              {m} : {count} days
+            </Text>
+          ))}
+        </View>
+
+        {/* APPOINTMENT */}
+        {appointment && (
+          <View style={styles.appointmentBox}>
+            <Text style={styles.appointmentTitle}>Appointment Details</Text>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Severity</Text>
+              <Text style={styles.value}>{appointment.severity}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Assigned To</Text>
+              <Text style={styles.value}>{appointment.assignedTo}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Status</Text>
+              <Text style={styles.value}>{appointment.status}</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Date</Text>
+              <Text style={styles.value}>{appointment.date}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Time</Text>
+              <Text style={styles.value}>{appointment.time}</Text>
+            </View>
+          </View>
+        )}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 50, paddingHorizontal: 10 },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.card,
+    paddingTop: 50,
+    paddingHorizontal: 16,
+  },
+
+  content: {
+    maxWidth: 500,
+    width: "100%",
+    alignSelf: "center",
+  },
 
   title: {
-    fontSize: 24,
-    fontWeight: "800",
+    fontSize: 26,
+    fontWeight: "900",
     textAlign: "center",
+    color: COLORS.primary,
+    marginBottom: 20,
   },
 
   buttonRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 10,
+    justifyContent: "center",
+    gap: 12,
+    marginBottom: 20,
   },
 
   button: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: COLORS.primary,
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
+    paddingHorizontal: 18,
+    borderRadius: 25,
   },
 
   buttonText: {
     color: "#fff",
-    fontWeight: "700",
+    fontWeight: "800",
   },
 
   redirectText: {
     textAlign: "center",
-    color: "red",
+    color: COLORS.primary,
     marginBottom: 10,
     fontWeight: "600",
   },
@@ -215,65 +293,127 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 15,
     alignItems: "center",
+    marginVertical: 20,
+    paddingHorizontal: 10,
   },
 
   month: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "800",
+    color: COLORS.primary,
+  },
+
+  weekRow: {
+    flexDirection: "row",
+    width: CALENDAR_WIDTH,
+    alignSelf: "center",
+    marginBottom: 8,
+  },
+
+  weekText: {
+    width: CELL_SIZE,
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#666",
+    marginRight: CELL_GAP,
   },
 
   calendar: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    width: CALENDAR_WIDTH,
+    alignSelf: "center",
   },
 
   dayBox: {
-    width: "13%",
-    height: 55,
-    marginVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    width: CELL_SIZE,
+    height: CELL_SIZE,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    elevation: 2,
+    marginRight: CELL_GAP,
+    marginBottom: CELL_GAP,
+  },
+
+  dayBoxEmpty: {
+    width: CELL_SIZE,
+    height: CELL_SIZE,
+    marginRight: CELL_GAP,
+    marginBottom: CELL_GAP,
   },
 
   selectedDay: {
-    borderColor: "#000",
+    borderWidth: 2,
+    borderColor: COLORS.primary,
   },
 
   dayText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: "700",
+    color: COLORS.text,
   },
 
   analytics: {
-    marginTop: 20,
+    marginTop: 10,
+    marginBottom: 15,
+    backgroundColor: "#fff",
+    padding: 18,
+    borderRadius: 18,
+    elevation: 2,
   },
 
   analyticsTitle: {
     textAlign: "center",
-    fontWeight: "700",
+    fontWeight: "800",
     marginBottom: 8,
+    color: COLORS.primary,
   },
 
   analyticsText: {
     textAlign: "center",
+    color: COLORS.text,
   },
 
   appointmentBox: {
     marginTop: 20,
-    padding: 15,
-    borderRadius: 12,
-    backgroundColor: "#f5f5f5",
+    padding: 18,
+    borderRadius: 18,
+    backgroundColor: "#fff",
+    elevation: 3,
   },
 
   appointmentTitle: {
-    fontWeight: "800",
-    marginBottom: 8,
+    fontWeight: "900",
+    marginBottom: 10,
     textAlign: "center",
+    color: COLORS.primary,
+  },
+
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+
+  label: {
+    fontSize: 13,
+    color: "#666",
+    fontWeight: "600",
+  },
+
+  value: {
+    fontSize: 13,
+    color: "#111",
+    fontWeight: "700",
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#eee",
+    marginVertical: 10,
   },
 });
